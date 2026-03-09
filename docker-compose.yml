@@ -1,0 +1,31 @@
+services:
+  asu:
+    build:
+      context: .
+      dockerfile: asu/Dockerfile
+    restart: unless-stopped
+    privileged: true
+    tty: true
+    volumes:
+      - asu_data:/asu/public
+      - asu_podman:/home/podman/.local/share/containers
+
+  redis:
+    image: "redis/redis-stack-server"
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data/
+
+  caddy:
+    image: caddy:latest
+    restart: unless-stopped
+    volumes:
+      - ./Caddyfile:/Caddyfile:ro
+    command: caddy run --config /Caddyfile
+    ports:
+      - "8000:80"
+
+volumes:
+  asu_podman:
+  asu_data:
+  redis_data:

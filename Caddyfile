@@ -1,0 +1,11 @@
+:80 {
+	root * /site/
+	file_server /json/
+	file_server /store/
+	header Access-Control-Allow-Methods "POST, GET, OPTIONS"
+	header Access-Control-Allow-Headers "*"
+	header Access-Control-Allow-Origin "*"
+  @options method OPTIONS
+	respond @options 204
+	reverse_proxy * asu:8000
+}
