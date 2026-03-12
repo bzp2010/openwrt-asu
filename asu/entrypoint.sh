@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# clean temporary files
+rm -rf /tmp/storage-run-$(id -u)/containers /tmp/storage-run-$(id -u)/libpod/tmp
+
+# start podman service
 SOCK_PATH="/run/podman"
 
 podman system service --time=0 unix:"${SOCK_PATH}/podman.sock" &
