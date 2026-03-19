@@ -1,0 +1,74 @@
+diff --git a/asu/build.py b/asu/build.py
+index c63ea9f..1c97122 100644
+--- a/asu/build.py
++++ b/asu/build.py
+@@ -213,6 +213,13 @@ def _build(build_request: BuildRequest, job=None):
+             container.kill()
+             report_error(job, f"Could not set up ImageBuilder ({returncode=})")
+ 
++    if build_request.repositories:
++        for name, repo in build_request.repositories.items():
++            returncode, job.meta["stdout"], job.meta["stderr"] = run_cmd(
++                container,
++                ["sh", "-c", f"echo '{repo}packages.adb' >> repositories"]
++            )
++
+     returncode, job.meta["stdout"], job.meta["stderr"] = run_cmd(
+         container, ["make", "info"]
+     )
+diff --git a/asu/build_request.py b/asu/build_request.py
+index a2c7e4c..ddffde2 100644
+--- a/asu/build_request.py
++++ b/asu/build_request.py
+@@ -11,6 +11,14 @@ REPO_NAME_PATTERN = r"^[\w.-]+$"
+ REPO_URL_PATTERN = r"^https?://\S+$"
+ 
+ 
++def default_repositories() -> dict[str, str]:
++    return settings.default_repositories.copy()
++
++
++def default_repository_keys() -> list[str]:
++    return list(settings.default_repository_keys)
++
++
+ class BuildRequest(BaseModel):
+     distro: Annotated[
+         str,
+@@ -142,19 +150,21 @@ class BuildRequest(BaseModel):
+             Annotated[str, Field(pattern=REPO_URL_PATTERN)],
+         ],
+         Field(
++            default_factory=default_repositories,
+             description="""
+                 Additional repositories for user packages.
+             """.strip()
+         ),
+-    ] = {}
++    ]
+     repository_keys: Annotated[
+         list[str],
+         Field(
++            default_factory=default_repository_keys,
+             description="""
+                     Verfication keys for the additional repositories.
+                 """.strip(),
+         ),
+-    ] = []
++    ]
+     client: Annotated[
+         str | None,
+         Field(
+diff --git a/asu/config.py b/asu/config.py
+index 92c5704..c38537d 100644
+--- a/asu/config.py
++++ b/asu/config.py
+@@ -71,6 +71,8 @@ class Settings(BaseSettings):
+     branches_file: Union[str, Path, None] = None
+     max_custom_rootfs_size_mb: int = 1024
+     max_defaults_length: int = 20480
++    default_repositories: dict[str, str] = {}
++    default_repository_keys: list[str] = []
+     repository_allow_list: list = []
+     base_container: str = "ghcr.io/openwrt/imagebuilder"
+     container_socket_path: str = ""

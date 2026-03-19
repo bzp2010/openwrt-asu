@@ -1,0 +1,8 @@
+FROM docker.io/openwrt/asu:latest
+
+RUN apt update && apt install -y git && apt clean && rm -rf /var/lib/apt/lists/* && \
+  mkdir -p /tmp/patches
+
+COPY /tmp/patches/* /tmp/patches
+
+RUN for patch in /tmp/patches/*.patch; do git apply -p1 $patch; done

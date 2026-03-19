@@ -6,6 +6,10 @@ services:
     restart: unless-stopped
     privileged: true
     tty: true
+    environment: []
+    #  - DEFAULT_REPOSITORIES={"nikki":"http://127.0.0.1/packages/x86_64/custom/"}
+    #  - DEFAULT_REPOSITORY_KEYS=["-----BEGIN PUBLIC KEY-----\n...public_key...\n-----END PUBLIC KEY-----\n"]
+    #  - REPOSITORY_ALLOW_LIST=["http://127.0.0.1/packages/x86_64/custom/"]
     volumes:
       - asu_data:/asu/public
       - asu_podman:/home/podman/.local/share/containers
